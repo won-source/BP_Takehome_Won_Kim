@@ -4,6 +4,38 @@
 
 349 of 389 corpus documents entered the pipeline (40 excluded — wrong document type, not size — via filename-regex classification failure or correct routing to solicitation/bid categories out of scope). Tiered extraction: 123 documents (Tier 1/1.5) received full 19-field LLM extraction; 226 documents (Tier 2/4) received existence-only identity confirmation, zero API calls. Structured output lives in SQLite (`contracts.db`), included in this repository — open directly with the `sqlite3` CLI, DB Browser for SQLite, or Datasette; a ChromaDB vector store (1,457 chunks, built from the 123 fully-extracted documents) supports clause-level retrieval. A Streamlit chat UI routes queries across SQL, vector, or a rejection path for out-of-scope questions.
 
+## Setup and Running
+
+**Install dependencies:**
+```
+pip install -r requirements.txt
+```
+
+**Create a `.env` file** in the project root with your own API keys:
+```
+ANTHROPIC_API_KEY=your_key_here
+VOYAGE_API_KEY=your_key_here
+```
+
+**Run the chat UI:**
+```
+py -m streamlit run chat_app.py
+```
+On Windows, bare `python`/`streamlit` may resolve to a stub rather than the real install — use `py -m streamlit` specifically if `streamlit run` alone doesn't launch.
+
+**Open the database directly:** `contracts.db` is included in this repository. Open with the `sqlite3` CLI, DB Browser for SQLite, or Datasette — no setup beyond the file itself.
+
+**Run the evaluation scripts:**
+```
+py compare_ground_truth.py
+py eval_retrieval.py
+```
+
+**Optional — rebuild derived tables:** only for full production - not required to run or evaluate the system.
+```
+py build_master_table.py --db contracts.db
+```
+
 ## Key decisions
 
 * 19 fields were chosen to answer specific portfolio questions (assignment exposure, renewal risk, spend commitment), not to maximize extraction coverage.
