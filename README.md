@@ -56,6 +56,7 @@ Extraction accuracy: 81.9% automated / 85.8% manual-verified across 127 scored f
 * `computed_status` and the renewal-precise columns are a snapshot from the last `build_master_table.py` run. The chat UI's "expiring soon" query does its own date filtering live (`date('now')`), but the underlying active/expired classification is frozen at build time. Four of the six precise renewal-expiration dates land in October 2026. Without a rebuild after that point, those contracts will keep reporting as active past their real deadline. Rebuild with `py build_master_table.py --db contracts.db` to refresh.
 * Duration-derived expiration dates (e.g. "12 weeks from...") are always anchored to the contract's effective date, even when the source text names a different anchor event. One case in the corpus (`21144_Fully_Executed_Agreement.pdf`, "12 weeks from receipt of notice to proceed") is anchored to the signature date instead of the actual notice-to-proceed date. This has no impact today since the contract is expired either way, but it's the general failure mode for any duration tied to a milestone other than execution.
 * `renewal_precise_expiration` is inaccurate by 1-17 days for 4 of the 6 contracts currently computing as still-active via renewal (Burke, Stanley, Ciorba, Clark Dietz, Burns & McDonnell; Burke's is correct by coincidence). Root cause: the column assumes each sub-agreement renews on its own originally-extracted base-agreement date. Lake County actually renews all sub-agreements under one `contract_id` on a shared anniversary schedule. This doesn't affect any active/inactive determination, only exact-date precision if queried directly. It isn't fixed; correct dates were applied manually to the exec summary slide instead.
+* Confidentiality controls not yet implemented. Documents are sent to the Anthropic API under standard terms, with no zero-data-retention agreement, private/VPC deployment, or PII/entity masking currently in place.
 
 ## Top improvements, if continued
 
@@ -66,6 +67,7 @@ Extraction accuracy: 81.9% automated / 85.8% manual-verified across 127 scored f
 * Renewal-reminder email automation (90/60/30-day thresholds), with logic designed but no live email integration in this environment.
 * Letter-text date extraction for all files, replacing filename-derived renewal dates with direct text parsing for day-level precision (generalizes the fix for the `renewal_precise_expiration` limitation above).
 * Teams/workplace chatbot integration, scoped out for time.
+* Add confidentiality controls for production use: a ZDR agreement, private/VPC deployment, or PII/entity masking before data reaches the API.
 
 **Evaluation:**
 
@@ -76,5 +78,5 @@ Extraction accuracy: 81.9% automated / 85.8% manual-verified across 127 scored f
 **Production monitoring:**
 
 * Schedule periodic ground-truth re-runs and spot-audits.
-* Monitor existing confidence signals over time, with active alerting on distance-threshold pass-rate and truncation/error-rate trends.
+* Monitor and gate on confidence signals: alert on distance-threshold/truncation trends over time, and require review of any low-confidence field before it exports to an ERP or financial model.
 * Add a live dashboard of current contracts.
