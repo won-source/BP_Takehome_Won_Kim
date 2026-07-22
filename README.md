@@ -2,7 +2,7 @@
 
 ## Architecture
 
-349 of 389 corpus documents entered the pipeline (40 excluded — wrong document type, not size — via filename-regex classification failure or correct routing to solicitation/bid categories out of scope). Tiered extraction: 123 documents (Tier 1/1.5) received full 19-field LLM extraction; 226 documents (Tier 2/4) received existence-only identity confirmation, zero API calls. Structured output lives in SQLite (`contracts.db`, browsable with standard SQLite tooling — e.g. the `sqlite3` CLI or Datasette, though neither is a bundled dependency of this project); a ChromaDB vector store (1,457 chunks, built from the 123 fully-extracted documents) supports clause-level retrieval. A Streamlit chat UI routes queries across SQL, vector, or a rejection path for out-of-scope questions.
+349 of 389 corpus documents entered the pipeline (40 excluded — wrong document type, not size — via filename-regex classification failure or correct routing to solicitation/bid categories out of scope). Tiered extraction: 123 documents (Tier 1/1.5) received full 19-field LLM extraction; 226 documents (Tier 2/4) received existence-only identity confirmation, zero API calls. Structured output lives in SQLite (`contracts.db`), included in this repository — open directly with the `sqlite3` CLI, DB Browser for SQLite, or Datasette; a ChromaDB vector store (1,457 chunks, built from the 123 fully-extracted documents) supports clause-level retrieval. A Streamlit chat UI routes queries across SQL, vector, or a rejection path for out-of-scope questions.
 
 ## Key decisions
 
@@ -13,7 +13,7 @@
 
 ## Evaluation
 
-Extraction accuracy: 81.9% automated / 85.8% manual-verified across 127 scored fields, drawn from the 12 Tier 1/1.5 documents (of 17 hand-labeled total — the other 5 are Tier 2/4 existence-only docs, which get an identity check, not field-by-field scoring). Retrieval eval: 10/10 passed on a hand-designed test suite (5 SQL-path, 5 vector-path), including a documented safe-failure case (CDW modification query — retrieval gap, correctly hedged rather than hallucinated).
+Extraction accuracy: 81.9% automated / 85.8% manual-verified across 127 scored fields, drawn from the 12 Tier 1/1.5 documents (of 17 hand-labeled total — 4 Tier 2/4 existence-only docs plus 1 rate_adjustment doc scored on a separate specialized schema). Retrieval eval: 10/10 passed on a hand-designed test suite (5 SQL-path, 5 vector-path), including a documented safe-failure case (CDW modification query — retrieval gap, correctly hedged rather than hallucinated).
 
 ## Known limitations
 
@@ -23,9 +23,26 @@ Extraction accuracy: 81.9% automated / 85.8% manual-verified across 127 scored f
 * Vector store is not independently browsable — accessed only via the chat UI's retrieval path, with citations.
 * `computed_status` and the renewal-precise columns are a snapshot as of the last `build_master_table.py` run, not live-computed — while the chat UI's "expiring soon" query does its own date filtering live (`date('now')`), the underlying active/expired classification itself is frozen at build time. Four of the six precise renewal-expiration dates land in October 2026; without a rebuild after that point, those contracts will keep reporting as active past their real deadline. Rebuild (`py build_master_table.py --db contracts.db`) to refresh.
 * Duration-derived expiration dates (e.g. "12 weeks from...") are always anchored to the contract's effective date, even when the source text names a different anchor event. One case in the corpus (`21144_Fully_Executed_Agreement.pdf`, "12 weeks from receipt of notice to proceed") is anchored to the signature date instead of the actual notice-to-proceed date — no impact today since the contract is expired either way, but it's the general failure mode for any duration tied to a milestone other than execution.
+* `renewal_precise_expiration` is inaccurate by 1-17 days for 4 of the 6 contracts currently computing as still-active via renewal (Burke, Stanley, Ciorba, Clark Dietz, Burns & McDonnell — Burke's is correct by coincidence). Root cause: the column assumes each sub-agreement renews on its own originally-extracted base-agreement date, but Lake County actually renews all sub-agreements under one `contract_id` on a shared anniversary schedule. Does not affect any active/inactive determination — only exact-date precision if queried directly. Not fixed; correct dates were applied manually to the exec summary slide instead.
 
 ## Top improvements, if continued
 
-1. Letter-text regex extraction for renewal dates (currently derived from filename patterns; day-level precision would improve with direct text parsing).
-2. Fix the `141301_CDW_Signed.pdf`-class extraction miss for `sole_source_vs_competitive_bid` (explicit procurement-vehicle language present in the text but not picked up) — the remaining gap in that field is a labeling-inference disagreement on one document, not a missing capability.
-3. Renewal-reminder email automation (90/60/30-day thresholds) — logic designed, not wired to a live email service in this environment.
+**Features:**
+
+* Normalize `contract_value` into a structured annual/period figure — currently free-text; needed for a live dashboard and any future ERP cross-reference.
+* Distinguish signature/execution date from contractual effective date, especially on modifications.
+* Renewal-reminder email automation (90/60/30-day thresholds) — logic designed, not wired to a live email service in this environment.
+* Letter-text date extraction for all files — replace filename-derived renewal dates with direct text parsing for day-level precision (generalizes the fix for the `renewal_precise_expiration` limitation above).
+* Teams/workplace chatbot integration — scoped out for time.
+
+**Evaluation:**
+
+* Close remaining accuracy gaps to push past 85% — e.g. the DocuSign AcroForm issue and any other root-caused gaps surfaced during a broader field-by-field review.
+* Automate the eval suite as a pre-deploy check — any change to extraction logic reruns `compare_ground_truth.py` and `eval_retrieval.py` before shipping.
+* Expand the retrieval eval beyond the current 10 hand-designed cases toward a larger, less curated sample.
+
+**Production monitoring:**
+
+* Schedule periodic ground-truth re-runs and spot-audits.
+* Monitor existing confidence signals over time — alert on distance-threshold pass-rate and truncation/error-rate trends, not just log them.
+* Add a live dashboard of current contracts.
