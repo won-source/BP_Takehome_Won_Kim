@@ -1,0 +1,287 @@
+{
+  "name": "extract_contract_fields",
+  "description": "Extract structured fields from a Lake County contract document. Every field must include the page number where the value was found. If a field is genuinely not present in this document, set value to 'not_stated' and source_page to null -- do not guess or infer from context outside the document. If a field's answer likely lives in a document this one references but does not itself contain (e.g. a SOW governed by a separate master agreement), set value to 'not_stated - see referenced [document name]' and source_page to null.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "counterparty_name": {
+        "$ref": "#/$defs/field_string"
+      },
+      "org_role": {
+        "$ref": "#/$defs/field_org_role"
+      },
+      "effective_date": {
+        "$ref": "#/$defs/field_string"
+      },
+      "expiration_date": {
+        "$ref": "#/$defs/field_string"
+      },
+      "renewal_mechanism": {
+        "$ref": "#/$defs/field_renewal"
+      },
+      "contract_value": {
+        "$ref": "#/$defs/field_string"
+      },
+      "fee_structure": {
+        "$ref": "#/$defs/field_fee_structure"
+      },
+      "payment_terms": {
+        "$ref": "#/$defs/field_string"
+      },
+      "annual_price_escalation_type": {
+        "$ref": "#/$defs/field_escalation_type"
+      },
+      "annual_price_escalation_detail": {
+        "$ref": "#/$defs/field_string"
+      },
+      "termination_for_convenience": {
+        "$ref": "#/$defs/field_yn"
+      },
+      "notice_period": {
+        "$ref": "#/$defs/field_string"
+      },
+      "assignment_consent_required": {
+        "$ref": "#/$defs/field_yn"
+      },
+      "indemnity_present": {
+        "$ref": "#/$defs/field_yn"
+      },
+      "insurance_required": {
+        "$ref": "#/$defs/field_yn"
+      },
+      "sole_source_vs_competitive_bid": {
+        "$ref": "#/$defs/field_procurement"
+      },
+      "signer_title": {
+        "$ref": "#/$defs/field_string"
+      },
+      "fiscal_year_appropriation_contingent": {
+        "$ref": "#/$defs/field_yn"
+      },
+      "modification_summary": {
+        "$ref": "#/$defs/field_modification_summary"
+      }
+    },
+    "required": [
+      "counterparty_name",
+      "org_role",
+      "effective_date",
+      "expiration_date",
+      "renewal_mechanism",
+      "contract_value",
+      "fee_structure",
+      "payment_terms",
+      "annual_price_escalation_type",
+      "annual_price_escalation_detail",
+      "termination_for_convenience",
+      "notice_period",
+      "assignment_consent_required",
+      "indemnity_present",
+      "insurance_required",
+      "sole_source_vs_competitive_bid",
+      "signer_title",
+      "fiscal_year_appropriation_contingent",
+      "modification_summary"
+    ],
+    "$defs": {
+      "field_string": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "source_page": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "source_page"
+        ]
+      },
+      "field_yn": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "enum": [
+              "Y",
+              "N",
+              "not_stated"
+            ]
+          },
+          "source_page": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "source_page"
+        ]
+      },
+      "field_org_role": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "enum": [
+              "buyer",
+              "seller",
+              "lessor",
+              "lessee",
+              "not_stated"
+            ]
+          },
+          "source_page": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "source_page"
+        ]
+      },
+      "field_renewal": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "enum": [
+              "none",
+              "option_to_renew",
+              "auto_renew_unless_cancelled",
+              "not_stated"
+            ]
+          },
+          "source_page": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "source_page"
+        ]
+      },
+      "field_fee_structure": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "enum": [
+              "fixed_fee",
+              "time_and_materials",
+              "per_unit",
+              "rate_based",
+              "not_stated"
+            ]
+          },
+          "source_page": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "source_page"
+        ]
+      },
+      "field_escalation_type": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "enum": [
+              "none",
+              "automatic_stepup",
+              "cap_on_requested_increase",
+              "not_stated"
+            ]
+          },
+          "source_page": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "source_page"
+        ]
+      },
+      "field_procurement": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "enum": [
+              "competitive_bid",
+              "sole_source",
+              "cooperative_purchasing_vehicle",
+              "not_applicable",
+              "not_stated"
+            ]
+          },
+          "source_page": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "source_page"
+        ]
+      },
+      "field_modification_summary": {
+        "type": "object",
+        "description": "Only applicable to modification/amendment documents. For base_agreement/sow documents, set value to 'not_applicable_doc_type'.",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "modification_type": {
+            "type": "string",
+            "enum": [
+              "rate_increase",
+              "rate_schedule_expansion",
+              "term_extension",
+              "scope_change",
+              "vendor_or_party_change",
+              "assignment",
+              "termination",
+              "other",
+              "not_applicable"
+            ]
+          },
+          "source_page": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "modification_type",
+          "source_page"
+        ]
+      }
+    }
+  }
+}

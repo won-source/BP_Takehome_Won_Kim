@@ -1,0 +1,12 @@
+anthropic
+pypdf
+pymupdf
+voyageai
+chromadb
+openpyxl
+python-dateutil
+cryptography
+streamlit
+httpx
+pandas
+plotly
