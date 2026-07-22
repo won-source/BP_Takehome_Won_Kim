@@ -210,10 +210,10 @@ SUGGESTED_CLAUSE_QUERIES = [
 ]
 
 st.set_page_config(page_title="Lake County Contracts Chat", page_icon="\U0001F4C4")
-st.title("Lake County Contracts — Chat")
+st.title("Lake County Contracts Chat")
 st.caption(
-    "Full corpus: 123 documents with full field extraction (Tier 1/1.5) + "
-    "226 existence-only records (Tier 2/4) -- 349 rows in contracts_master."
+    "Ask about vendors, dates, dollar amounts, renewal risk, and contract clause "
+    "language across Lake County's procurement contracts."
 )
 
 with st.sidebar:
