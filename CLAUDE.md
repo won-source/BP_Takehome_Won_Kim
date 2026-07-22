@@ -179,7 +179,7 @@ Minimal chat interface, shows routing path + reasoning in an expander for debugg
 - `pilot_tier*.csv` — the original 17-doc pilot subset, now superseded by the full run but harmless to leave.
 
 ### Ground truth
-- **`Berkshire_Ground_Truth_Labels_v14.xlsx`** is current. History: v10→v14 iterated through fixing the effective_date definition (settled on "last signature date, mechanically"), fee_structure corrections, modification_type corrections (21022→assignment), and citation-page fixes. **Note from this session**: the user has repeatedly re-saved ground truth files that didn't actually pick up their edits on the first attempt (silent save failures or stale attachment snapshots) — always verify a claimed ground-truth edit actually landed on disk (check mtime + diff the specific cell) before trusting it, don't just take "I updated it" at face value.
+- **`Berkshire_Ground_Truth_Labels_v14.xlsx`** is current. History: v10→v14 iterated through fixing the effective_date definition (settled on "last signature date, mechanically"), fee_structure corrections, modification_type corrections (21022→assignment), and citation-page fixes. **Note**: a ground-truth save doesn't always pick up the intended edit on the first attempt (silent save failures or stale attachment snapshots are possible) — always verify a claimed edit actually landed on disk (check mtime + diff the specific cell) before trusting it or re-running comparisons against it.
 - `Berkshire_Ground_Truth_Labels_v9.xlsx` and earlier are historical, not current.
 
 ### Documentation
